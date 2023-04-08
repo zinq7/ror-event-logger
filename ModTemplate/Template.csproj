@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk"
+    xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <!-- This section just bundles a thunderstore package in /dist-->
+    <Target Name="Package" AfterTargets="Build">
+        <ItemGroup>
+            <Resources Include="res\*.*" />
+            <Dist Include="dist" />
+            <Assembly Include="dist\assembly" />
+            <DeployFiles Include="dist\assembly\*.*" />
+        </ItemGroup>
+
+        <PropertyGroup>
+            <DeployFolder>C:\Users\Mark\AppData\Roaming\r2modmanPlus-local\RiskOfRain2\profiles\ModTemplate\BepInEx\plugins\RiskOfResources-Template</DeployFolder>
+        </PropertyGroup>
+
+        <Copy SourceFiles="..\README.md" DestinationFolder="@(Assembly)" />
+        <Copy SourceFiles="@(Resources)" DestinationFolder="@(Assembly)" />
+        <Copy SourceFiles="$(OutputPath)Template.dll" DestinationFolder="@(Assembly)" />
+        <ZipDirectory Overwrite="True" SourceDirectory="@(Assembly)" DestinationFile="dist\$(ProjectName).zip" />
+    </Target>
+
+    <ItemGroup>
+        <PackageReference Include="BepInEx.Analyzers" Version="1.0.*">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="BepInEx.Core" Version="5.4.*" />
+        <PackageReference Include="RiskOfRain2.GameLibs" Version="1.2.4-r.*" />
+        <PackageReference Include="UnityEngine.Modules" Version="2019.4.26" />
+        <PackageReference Include="MMHOOK.RoR2" Version="2022.9.*">
+            <NoWarn>NU1701</NoWarn>
+        </PackageReference>
+    </ItemGroup>
+
+</Project>

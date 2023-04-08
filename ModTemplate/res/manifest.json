@@ -1,0 +1,12 @@
+﻿{
+  "name": "ModTemplate",
+  "author": "RiskOfResources",
+  "authorName": "RiskOfResources",
+  "version_number": "0.0.1",
+  "website_url": "",
+  "description": "A template for creating mods.",
+  "dependencies": [
+    "bbepis-BepInExPack-5.4.*",
+    "RiskofThunder-HookGenPatcher-1.2.*"
+  ]
+}
