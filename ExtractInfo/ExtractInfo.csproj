@@ -17,12 +17,12 @@
         </ItemGroup>
 
         <PropertyGroup>
-            <DeployFolder>C:\Users\Mark\AppData\Roaming\r2modmanPlus-local\RiskOfRain2\profiles\ModTemplate\BepInEx\plugins\RiskOfResources-Template</DeployFolder>
+            <DeployFolder>C:\Users\16123\AppData\Roaming\r2modmanPlus-local\RiskOfRain2\profiles\f\ --testing--\BepInEx\plugins\RiskOfResources-Template</DeployFolder>
         </PropertyGroup>
 
         <Copy SourceFiles="..\README.md" DestinationFolder="@(Assembly)" />
         <Copy SourceFiles="@(Resources)" DestinationFolder="@(Assembly)" />
-        <Copy SourceFiles="$(OutputPath)Template.dll" DestinationFolder="@(Assembly)" />
+        <Copy SourceFiles="$(OutputPath)ExtractInfo.dll" DestinationFolder="@(Assembly)" />
         <ZipDirectory Overwrite="True" SourceDirectory="@(Assembly)" DestinationFile="dist\$(ProjectName).zip" />
     </Target>
 

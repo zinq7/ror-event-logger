@@ -1,6 +1,6 @@
 ﻿using BepInEx.Logging;
 
-namespace ModTemplate
+namespace ExtractInfo
 {
     internal static class Log
     {
