@@ -1,5 +1,6 @@
 using BepInEx;
 using RoR2;
+using RoRGauntlet;
 using System;
 using UnityEngine;
 
@@ -18,7 +19,8 @@ namespace ExtractInfo
 
         public void Awake()
         {
-            On.RoR2.AwakeEvent.Awake += ListSurvs;
+            new AdditionalMetadata();
+            // On.RoR2.AwakeEvent.Awake += ListSurvs;
         }
 
         private void ListSurvs(On.RoR2.AwakeEvent.orig_Awake orig, AwakeEvent self)
@@ -69,7 +71,7 @@ namespace ExtractInfo
 
 
                     var png = myTexture2D.EncodeToPNG();
-                    string path = "/" + Language.GetString(item.baseNameToken) + ".png";
+                    string path = "/" + Language.english.GetLocalizedStringByToken(item.baseNameToken) + ".png";
                     path = FOLDER + path.Replace(":", " -");
                     path = path.Replace("?", "x");
                     System.IO.File.WriteAllBytes(path, png);
