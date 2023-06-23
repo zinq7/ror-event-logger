@@ -46,19 +46,22 @@ namespace RoRGauntlet
 
             // character death
             On.RoR2.CharacterMaster.OnBodyDeath += GetReqt;
-            On.RoR2.CharacterBody.FixedUpdate += LogPositionTooMuchLoggingIDC;
+           //  On.RoR2.CharacterBody.FixedUpdate += LogPositionTooMuchLoggingIDC;
+            
             // EXPORT
             On.RoR2.Run.BeginGameOver += SaveToFile;
 
-            On.RoR2.Chat.HandleBroadcastChat += OnChatBreakEverything;
+            // On.RoR2.Chat.HandleBroadcastChat += OnChatBreakEverything;
             // On.RoR2.CharacterMaster.OnEnable += UrHere;
         }
 
         private void OnChatBreakEverything(On.RoR2.Chat.orig_HandleBroadcastChat orig, UnityEngine.Networking.NetworkMessage netMsg)
         {
             orig(netMsg);
+            int i = 0;
             foreach (var node in SceneInfo.instance.groundNodes.nodes)
             {
+                if (i++ % 2 == 0) continue;
                 var pos = node.position;
                 pos.y += 30;
 
@@ -85,7 +88,7 @@ namespace RoRGauntlet
 
                 byte[] bytes = screenShot.EncodeToPNG();
 
-                System.IO.File.WriteAllBytes($"{FilePath}\\{pos.x}_{pos.y}_{pos.z}.png", bytes);
+                System.IO.File.WriteAllBytes($"{FilePath}\\Images\\{pos.x}_{pos.y}_{pos.z}.png", bytes);
                 Debug.Log(string.Format("Took screenshot to: {0}", $"{FilePath}\\{pos.x}_{pos.y}_{pos.z}.png"));
             }
         }
@@ -118,7 +121,7 @@ namespace RoRGauntlet
             var logFolder = $"{FilePath}\\RunReports";
             Directory.CreateDirectory(logFolder);
 
-            File.WriteAllText(logFolder + "\\" + DateTime.UtcNow.ToString("yyyy-MM-dd") + "_" + new System.Random().Next().ToString() + ".run.json", GetJSON()); // cool
+            File.WriteAllText(logFolder + "\\" + DateTime.UtcNow.ToString("yyyy_MM_dd_HH_mm_ss") + ".run.json", GetJSON()); // cool
         }
 
         private void GetReqt(On.RoR2.CharacterMaster.orig_OnBodyDeath orig, CharacterMaster self, CharacterBody body)
