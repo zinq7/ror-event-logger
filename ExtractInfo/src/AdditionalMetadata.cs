@@ -92,7 +92,6 @@ namespace RoRGauntlet
 
                 byte[] bytes = screenShot.EncodeToPNG();
 
-                System.IO.Directory.CreateDirectory("($\"{FilePath}\\Images\\")
                 System.IO.File.WriteAllBytes($"{FilePath}\\Images\\{pos.x}_{pos.y}_{pos.z}.png", bytes);
                 Debug.Log(string.Format("Took screenshot to: {0}", $"{FilePath}\\{pos.x}_{pos.y}_{pos.z}.png"));
             }
