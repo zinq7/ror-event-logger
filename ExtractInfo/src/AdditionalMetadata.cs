@@ -17,6 +17,7 @@ namespace RoRGauntlet
         public static string FilePath = Paths.BepInExRootPath;
         public AdditionalMetadata()
         {
+            
             // stage splitting and run data
             On.RoR2.Run.Start += LoadInfo;
             On.RoR2.Run.BeginStage += StageSplit;
@@ -41,13 +42,13 @@ namespace RoRGauntlet
             On.RoR2.LunarSunBehavior.FixedUpdate += EgoSucks;
 
             // pizza
-            On.EntityStates.BrotherMonster.SpellChannelEnterState.OnEnter += StartPizza;
-            On.EntityStates.BrotherMonster.SpellChannelExitState.OnEnter += EndPizza;
+            On.EntityStates.BrotherMonster.UltEnterState.OnEnter += StartPizza;
+            On.EntityStates.BrotherMonster.UltExitState.OnEnter += EndPizza;
 
             // character death
             On.RoR2.CharacterMaster.OnBodyDeath += GetReqt;
-           //  On.RoR2.CharacterBody.FixedUpdate += LogPositionTooMuchLoggingIDC;
-            
+            //  On.RoR2.CharacterBody.FixedUpdate += LogPositionTooMuchLoggingIDC;
+
             // EXPORT
             On.RoR2.Run.BeginGameOver += SaveToFile;
 
@@ -58,6 +59,9 @@ namespace RoRGauntlet
         private void OnChatBreakEverything(On.RoR2.Chat.orig_HandleBroadcastChat orig, UnityEngine.Networking.NetworkMessage netMsg)
         {
             orig(netMsg);
+
+            if (!netMsg.reader.ReadString().Equals("pog")) return;
+
             int i = 0;
             foreach (var node in SceneInfo.instance.groundNodes.nodes)
             {
@@ -84,10 +88,11 @@ namespace RoRGauntlet
                 camera.targetTexture = null;
                 RenderTexture.active = null; // JC: added to avoid errors
                 UnityEngine.Object.Destroy(rt);
-                
+
 
                 byte[] bytes = screenShot.EncodeToPNG();
 
+                System.IO.Directory.CreateDirectory("($\"{FilePath}\\Images\\")
                 System.IO.File.WriteAllBytes($"{FilePath}\\Images\\{pos.x}_{pos.y}_{pos.z}.png", bytes);
                 Debug.Log(string.Format("Took screenshot to: {0}", $"{FilePath}\\{pos.x}_{pos.y}_{pos.z}.png"));
             }
@@ -138,7 +143,7 @@ namespace RoRGauntlet
             orig(self, body);
         }
 
-        private void EndPizza(On.EntityStates.BrotherMonster.SpellChannelExitState.orig_OnEnter orig, EntityStates.BrotherMonster.SpellChannelExitState self)
+        private void EndPizza(On.EntityStates.BrotherMonster.UltExitState.orig_OnEnter orig, EntityStates.BrotherMonster.UltExitState self)
         {
             orig(self);
 
@@ -149,7 +154,7 @@ namespace RoRGauntlet
             }, self.gameObject);
         }
 
-        private void StartPizza(On.EntityStates.BrotherMonster.SpellChannelEnterState.orig_OnEnter orig, EntityStates.BrotherMonster.SpellChannelEnterState self)
+        private void StartPizza(On.EntityStates.BrotherMonster.UltEnterState.orig_OnEnter orig, EntityStates.BrotherMonster.UltEnterState self)
         {
             orig(self);
 
