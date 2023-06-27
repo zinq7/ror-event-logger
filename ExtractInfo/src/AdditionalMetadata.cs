@@ -52,49 +52,7 @@ namespace RoRGauntlet
             // EXPORT
             On.RoR2.Run.BeginGameOver += SaveToFile;
 
-            // On.RoR2.Chat.HandleBroadcastChat += OnChatBreakEverything;
             // On.RoR2.CharacterMaster.OnEnable += UrHere;
-        }
-
-        private void OnChatBreakEverything(On.RoR2.Chat.orig_HandleBroadcastChat orig, UnityEngine.Networking.NetworkMessage netMsg)
-        {
-            orig(netMsg);
-
-            if (!netMsg.reader.ReadString().Equals("pog")) return;
-
-            int i = 0;
-            foreach (var node in SceneInfo.instance.groundNodes.nodes)
-            {
-                if (i++ % 2 == 0) continue;
-                var pos = node.position;
-                pos.y += 30;
-
-                int resWidth = 200;
-                int resHeight = 200;
-
-                var circle = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                circle.SetActive(false);
-                circle.transform.position = pos;
-                var camera = circle.AddComponent<Camera>();
-                camera.transform.rotation = Quaternion.Euler(new Vector3(90, 0, 0));
-
-
-                RenderTexture rt = new RenderTexture(resWidth, resHeight, 24);
-                camera.targetTexture = rt;
-                Texture2D screenShot = new Texture2D(resWidth, resHeight, TextureFormat.RGB24, false);
-                camera.Render();
-                RenderTexture.active = rt;
-                screenShot.ReadPixels(new Rect(0, 0, resWidth, resHeight), 0, 0);
-                camera.targetTexture = null;
-                RenderTexture.active = null; // JC: added to avoid errors
-                UnityEngine.Object.Destroy(rt);
-
-
-                byte[] bytes = screenShot.EncodeToPNG();
-
-                System.IO.File.WriteAllBytes($"{FilePath}\\Images\\{pos.x}_{pos.y}_{pos.z}.png", bytes);
-                Debug.Log(string.Format("Took screenshot to: {0}", $"{FilePath}\\{pos.x}_{pos.y}_{pos.z}.png"));
-            }
         }
 
         static int time = 0;
