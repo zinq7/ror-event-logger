@@ -17,7 +17,7 @@ namespace RoRGauntlet
         public static string FilePath = Paths.BepInExRootPath;
         public AdditionalMetadata()
         {
-            
+
             // stage splitting and run data
             On.RoR2.Run.Start += LoadInfo;
             On.RoR2.Run.BeginStage += StageSplit;
@@ -49,10 +49,79 @@ namespace RoRGauntlet
             On.RoR2.CharacterMaster.OnBodyDeath += GetReqt;
             //  On.RoR2.CharacterBody.FixedUpdate += LogPositionTooMuchLoggingIDC;
 
+            // things you'd see in the chat
+            On.RoR2.FamilyDirectorCardCategorySelection.OnSelected += LogFams;
+            On.EntityStates.VoidCamp.Idle.OnEnter += VoidSeed;
+            On.EntityStates.Fauna.VultureEggDeathState.OnEnter += EggLog;
+
+            // portals and orbs
+            On.RoR2.PortalSpawner.OnWillSpawnUpdated += SpawnPortals;
+            On.RoR2.PortalSpawner.Start += SpawnOrbs;
+
             // EXPORT
             On.RoR2.Run.BeginGameOver += SaveToFile;
 
-            // On.RoR2.CharacterMaster.OnEnable += UrHere;
+            // On.RoR2.CharacterMaster.OnEnable += UrHere;\
+
+            
+
+
+
+        }
+
+        private void SpawnOrbs(On.RoR2.PortalSpawner.orig_Start orig, PortalSpawner self)
+        {
+            orig(self);
+
+            AddEvent(new MiscEvent()
+            {
+                eventInfo = "Orb (" + self.spawnPreviewMessageToken.Replace("A ", "").Replace(" orb appears..", "") + ")",
+                timestamp = Run.instance.GetRunStopwatch()
+            }, self.gameObject);
+        }
+
+        private void SpawnPortals(On.RoR2.PortalSpawner.orig_OnWillSpawnUpdated orig, PortalSpawner self, bool newValue)
+        {
+            orig(self, newValue);
+            AddEvent(new MiscEvent()
+            {
+                eventInfo = "Portal (" + self.spawnMessageToken.Replace("A ", "").Replace(" portal appears..", "") + ")",
+                timestamp = Run.instance.GetRunStopwatch()
+            }, self.gameObject);
+        }
+
+        private void EggLog(On.EntityStates.Fauna.VultureEggDeathState.orig_OnEnter orig, EntityStates.Fauna.VultureEggDeathState self)
+        {
+            AddEvent(new MiscEvent()
+            {
+                eventInfo = "AWU Egg",
+                timestamp = Run.instance.GetRunStopwatch()
+            }, self.gameObject);
+        }
+
+        private void VoidSeed(On.EntityStates.VoidCamp.Idle.orig_OnEnter orig, EntityStates.VoidCamp.Idle self)
+        {
+            orig(self);
+
+            AddEvent(new MiscEvent()
+            {
+                eventInfo = "Void Seed",
+                timestamp = Run.instance.GetRunStopwatch()
+            }, self.gameObject);
+        }
+
+        private void LogFams(On.RoR2.FamilyDirectorCardCategorySelection.orig_OnSelected orig, FamilyDirectorCardCategorySelection self, ClassicStageInfo stageInfo)
+        {
+            AddEvent(new FamilyEventEvent()
+            {
+                timestamp = Run.instance.GetRunStopwatch(),
+                familyBodyName = self.categories[0].cards[0].spawnCard.name,
+                x = 0,
+                y = 0,
+                z = 0
+            });
+
+            orig(self, stageInfo);
         }
 
         static int time = 0;

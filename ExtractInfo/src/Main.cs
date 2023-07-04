@@ -15,8 +15,6 @@ namespace ExtractInfo
         public const string PluginName = "ExtractInfo";
         public const string PluginVersion = "0.0.1";
 
-        const string FOLDER = "C:\\Users\\16132\\Documents\\Modding\\EXTRACTION\\";
-
         public void Awake()
         {
             new AdditionalMetadata();

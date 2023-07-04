@@ -16,6 +16,11 @@ namespace RoRes
 
     public class MiscEvent : RunEvent
     {
-        public string eventInfo; // family events
+        public string eventInfo;
+    }
+
+    public class FamilyEventEvent : RunEvent
+    {
+        public string familyBodyName;
     }
 }
