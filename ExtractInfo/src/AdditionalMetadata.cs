@@ -71,30 +71,18 @@ namespace RoRGauntlet
             //On.RoR2.PortalSpawner.OnWillSpawnUpdated += SpawnPortals;
             //On.RoR2.PortalSpawner.Start += SpawnOrbs;
 
+            // using skills
+            On.RoR2.GenericSkill.OnExecute += SkillLog;
+
             // EXPORT ALL DATA (to a file)
             On.RoR2.Run.BeginGameOver += SaveToFile;
         }
 
-        private void SpawnOrbs(On.RoR2.PortalSpawner.orig_Start orig, PortalSpawner self)
+        private void SkillLog(On.RoR2.GenericSkill.orig_OnExecute orig, GenericSkill self)
         {
             orig(self);
-
-            AddEvent(new MiscEvent()
-            {
-                eventInfo = "Orb (" + self.spawnPreviewMessageToken.Replace("A ", "").Replace(" orb appears..", "") + ")",
-                timestamp = Run.instance.GetRunStopwatch()
-            }, self.gameObject);
-        }
-
-        private void SpawnPortals(On.RoR2.PortalSpawner.orig_OnWillSpawnUpdated orig, PortalSpawner self, bool newValue)
-        {
-            orig(self, newValue);
-
-            AddEvent(new MiscEvent()
-            {
-                eventInfo = "Portal (" + self.spawnMessageToken.Replace("A ", "").Replace(" portal appears..", "") + ")",
-                timestamp = Run.instance.GetRunStopwatch()
-            }, self.gameObject);
+            bool found = info.skillUses.TryGetValue(self.skillNameToken, out int numUses);
+            info.skillUses[self.skillNameToken] = found ? numUses + 1 : 1;
         }
 
         private void EggLog(On.EntityStates.Fauna.VultureEggDeathState.orig_OnEnter orig, EntityStates.Fauna.VultureEggDeathState self)
@@ -448,7 +436,32 @@ namespace RoRGauntlet
             public List<string> artifacts = new();
             public string difficulty = "Eclipse8";
             public string player = "NONE";
+            public Dictionary<string, int> skillUses = new();
         }
+
+        // UNUSED
+        private void SpawnOrbs(On.RoR2.PortalSpawner.orig_Start orig, PortalSpawner self)
+        {
+            orig(self);
+
+            AddEvent(new MiscEvent()
+            {
+                eventInfo = "Orb (" + self.spawnPreviewMessageToken.Replace("A ", "").Replace(" orb appears..", "") + ")",
+                timestamp = Run.instance.GetRunStopwatch()
+            }, self.gameObject);
+        }
+
+        private void SpawnPortals(On.RoR2.PortalSpawner.orig_OnWillSpawnUpdated orig, PortalSpawner self, bool newValue)
+        {
+            orig(self, newValue);
+
+            AddEvent(new MiscEvent()
+            {
+                eventInfo = "Portal (" + self.spawnMessageToken.Replace("A ", "").Replace(" portal appears..", "") + ")",
+                timestamp = Run.instance.GetRunStopwatch()
+            }, self.gameObject);
+        }
+
     }
 
 }

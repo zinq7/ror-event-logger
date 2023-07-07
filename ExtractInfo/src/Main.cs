@@ -18,7 +18,6 @@ namespace ExtractInfo
         public void Awake()
         {
             new AdditionalMetadata();
-            // On.RoR2.AwakeEvent.Awake += ListSurvs;
         }
 
     }
