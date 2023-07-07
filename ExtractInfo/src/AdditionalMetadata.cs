@@ -81,15 +81,19 @@ namespace RoRGauntlet
         private void SkillLog(On.RoR2.GenericSkill.orig_OnExecute orig, GenericSkill self)
         {
             orig(self);
+
             bool found = info.skillUses.TryGetValue(self.skillNameToken, out int numUses);
             info.skillUses[self.skillNameToken] = found ? numUses + 1 : 1;
         }
 
-        private void EggLog(On.EntityStates.Fauna.VultureEggDeathState.orig_OnEnter orig, EntityStates.Fauna.VultureEggDeathState self)
+        bool delDupes = false;
+        private void EggLog(On.EntityStates.Fauna.VultureEggDeathState.orig_OnEnter orig, EntityStates.Fauna.VultureEggDeathState self) 
         {
             orig(self);
 
-            AddEvent(new MiscEvent()
+            if (delDupes = !delDupes) return;
+
+            AddEvent(new MiscEvent()    
             {
                 eventInfo = "AWU Egg",
                 timestamp = Run.instance.GetRunStopwatch()
