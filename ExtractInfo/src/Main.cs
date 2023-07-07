@@ -11,7 +11,7 @@ namespace ExtractInfo
     public class Main : BaseUnityPlugin
     {
         public const string PluginGUID = PluginAuthor + "." + PluginName;
-        public const string PluginAuthor = "RiskOfResources";
+        public const string PluginAuthor = "riskoresources-dev";
         public const string PluginName = "ExtractInfo";
         public const string PluginVersion = "0.0.1";
 

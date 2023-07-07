@@ -1,22 +1,26 @@
 ﻿using RoR2;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Collections;
 using RoRes;
 using BepInEx;
 using System.IO;
 using System;
 using RoRGauntlet;
 using UnityEngine;
+using EntityStates.VoidRaidCrab;
 
 namespace RoRGauntlet
 {
-    public class AdditionalMetadata
+    public class AdditionalMetadata : MonoBehaviour
     {
         public static AdditionalInfo info;
         public static StageStartEvent currentStage;
         public static string FilePath = Paths.BepInExRootPath;
+        private static readonly Dictionary<CharacterBody, Coroutine> activeCharacterTrackers = new();
         public AdditionalMetadata()
         {
+            Debug.Log("AWAKE FINISHED"); 
 
             // stage splitting and run data
             On.RoR2.Run.Start += LoadInfo;
@@ -24,9 +28,18 @@ namespace RoRGauntlet
 
             // teleporter events
             TeleporterInteraction.onTeleporterFinishGlobal += (tp) =>
+                AddEvent(new TeleportHitEvent() { timestamp = Run.instance.GetRunStopwatch() }, tp.gameObject);
+            TeleporterInteraction.onTeleporterChargedGlobal += (tp) =>
                 AddEvent(new ChargeEndEvent() { timestamp = Run.instance.GetRunStopwatch(), chargeType = ChargeType.teleporter }, tp.gameObject);
             TeleporterInteraction.onTeleporterBeginChargingGlobal += (tp) =>
                 AddEvent(new ChargeStartEvent() { timestamp = Run.instance.GetRunStopwatch(), chargeType = ChargeType.teleporter }, tp.gameObject);
+
+            // pillars
+            On.RoR2.MoonBatteryMissionController.OnBatteryCharged += (battery, charged, yes) =>
+            {
+                battery(charged, yes);
+                AddEvent(new ChargeEndEvent() { timestamp = Run.instance.GetRunStopwatch(), chargeType = ChargeType.pillar }, yes.gameObject);
+            };
 
             // inventory events
             On.RoR2.CharacterMaster.OnItemAddedClient += PickupItem;
@@ -47,7 +60,7 @@ namespace RoRGauntlet
 
             // character death
             On.RoR2.CharacterMaster.OnBodyDeath += GetReqt;
-            //  On.RoR2.CharacterBody.FixedUpdate += LogPositionTooMuchLoggingIDC;
+            RoR2.CharacterMaster.onStartGlobal += LogCharacterPlease; ;
 
             // things you'd see in the chat
             On.RoR2.FamilyDirectorCardCategorySelection.OnSelected += LogFams;
@@ -55,18 +68,11 @@ namespace RoRGauntlet
             On.EntityStates.Fauna.VultureEggDeathState.OnEnter += EggLog;
 
             // portals and orbs
-            On.RoR2.PortalSpawner.OnWillSpawnUpdated += SpawnPortals;
-            On.RoR2.PortalSpawner.Start += SpawnOrbs;
+            //On.RoR2.PortalSpawner.OnWillSpawnUpdated += SpawnPortals;
+            //On.RoR2.PortalSpawner.Start += SpawnOrbs;
 
-            // EXPORT
+            // EXPORT ALL DATA (to a file)
             On.RoR2.Run.BeginGameOver += SaveToFile;
-
-            // On.RoR2.CharacterMaster.OnEnable += UrHere;\
-
-            
-
-
-
         }
 
         private void SpawnOrbs(On.RoR2.PortalSpawner.orig_Start orig, PortalSpawner self)
@@ -83,6 +89,7 @@ namespace RoRGauntlet
         private void SpawnPortals(On.RoR2.PortalSpawner.orig_OnWillSpawnUpdated orig, PortalSpawner self, bool newValue)
         {
             orig(self, newValue);
+
             AddEvent(new MiscEvent()
             {
                 eventInfo = "Portal (" + self.spawnMessageToken.Replace("A ", "").Replace(" portal appears..", "") + ")",
@@ -92,6 +99,8 @@ namespace RoRGauntlet
 
         private void EggLog(On.EntityStates.Fauna.VultureEggDeathState.orig_OnEnter orig, EntityStates.Fauna.VultureEggDeathState self)
         {
+            orig(self);
+
             AddEvent(new MiscEvent()
             {
                 eventInfo = "AWU Egg",
@@ -112,6 +121,8 @@ namespace RoRGauntlet
 
         private void LogFams(On.RoR2.FamilyDirectorCardCategorySelection.orig_OnSelected orig, FamilyDirectorCardCategorySelection self, ClassicStageInfo stageInfo)
         {
+            orig(self, stageInfo);
+
             AddEvent(new FamilyEventEvent()
             {
                 timestamp = Run.instance.GetRunStopwatch(),
@@ -120,29 +131,33 @@ namespace RoRGauntlet
                 y = 0,
                 z = 0
             });
-
-            orig(self, stageInfo);
         }
 
-        static int time = 0;
-        private void LogPositionTooMuchLoggingIDC(On.RoR2.CharacterBody.orig_FixedUpdate orig, CharacterBody self)
+        private void LogCharacterPlease(CharacterMaster self)
         {
-            orig(self);
-
-            const int POSITION_LOG_INTERVAL = 1 * 60; // 1 seconds
-
-            if (self != null && self.master != null && self.master.GetBody() != null && self.master.GetBody().isPlayerControlled)
+            if (self.GetBody() != null && self.GetBody().isPlayerControlled)
             {
-                time++;
-                if (POSITION_LOG_INTERVAL % time == 0)
-                {
-                    AddEvent(new CharacterExistEvent()
-                    {
-                        timestamp = Run.instance.GetRunStopwatch(),
-                        health = self.healthComponent.combinedHealthFraction
-                    }, self.gameObject);
-                }
+                var bod = self.GetBody();
+
+                if (activeCharacterTrackers.ContainsKey(bod)) return;
+                activeCharacterTrackers.Add(bod, StartCoroutine(CheckCharacterPos(bod)));
             }
+        }
+
+        private IEnumerator CheckCharacterPos(CharacterBody character)
+        {
+            Debug.Log("Starting Logs for " + character.ToString());
+            while (character != null)
+            {
+                yield return new WaitForSeconds(1);
+                AddEvent(new CharacterExistEvent()
+                {
+                    timestamp = Run.instance.GetRunStopwatch(),
+                    health = character.healthComponent.combinedHealthFraction
+                }, character.gameObject);
+            }
+            Debug.Log("Removing " + character.ToString());
+            activeCharacterTrackers.Remove(character); // inactive
         }
 
         private void SaveToFile(On.RoR2.Run.orig_BeginGameOver orig, Run self, GameEndingDef gameEndingDef)
@@ -197,9 +212,12 @@ namespace RoRGauntlet
             if (self.transformTimer > 60f)
             {
                 // simulate
-                List<ItemIndex> list = new List<ItemIndex>(self.body.inventory.itemAcquisitionOrder);
-                Xoroshiro128Plus clone = new Xoroshiro128Plus(0);
-                clone.state0 = self.transformRng.state0; clone.state1 = self.transformRng.state1;
+                var list = new List<ItemIndex>(self.body.inventory.itemAcquisitionOrder);
+                var clone = new Xoroshiro128Plus(0)
+                {
+                    state0 = self.transformRng.state0,
+                    state1 = self.transformRng.state1
+                };
                 Util.ShuffleList(list, clone);
 
                 // simulate
@@ -366,7 +384,6 @@ namespace RoRGauntlet
             info.player = "REPLACE"; // TODO: replace with real character
 
             currentStage = null; // not to transfer over between runs
-            time = 0;
         }
 
         private void StageSplit(On.RoR2.Run.orig_BeginStage orig, Run self)

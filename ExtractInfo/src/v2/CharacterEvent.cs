@@ -9,4 +9,10 @@ namespace RoRes
         public float health;
     }
 
+    public class SpawnInEvent : RunEvent
+    {
+        public bool firstSpawn;
+        public string character;
+    }
+
 }

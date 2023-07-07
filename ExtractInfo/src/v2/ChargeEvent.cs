@@ -8,6 +8,8 @@ namespace RoRes
         public ChargeType chargeType;
     }
 
+    public class TeleportHitEvent : RunEvent { }
+
     public class PillarStartEvent : ChargeStartEvent
     {
         public Pillar pillarType;
