@@ -23,4 +23,9 @@ namespace RoRes
     {
         public string familyBodyName;
     }
+
+    public class RunEndEvent : RunEvent
+    {
+        // no extra info yet
+    }
 }
