@@ -77,11 +77,12 @@ namespace RoRGauntlet
 
         public class AdditionalInfo
         {
-            public List<RunEvent> runEvents = new();
-            public List<string> artifacts = new();
-            public string difficulty = "Eclipse8";
-            public string player = "NONE";
+            public List<RunEvent> runEvents = new(); // timeline of events that occur (generally player initiated)
+            public List<string> artifacts = new(); // list of artifact namess
+            public string difficulty = "Eclipse8"; // Easy, Medium, Hard, eclispes
+            public string player = "NONE"; // player (i.e ZINQ)
             public Dictionary<string, int> skillUses = new(); // skillname, use#
+            public List<StageLoot> stageLoots = new(); // list of interactables 
         }
 
     }

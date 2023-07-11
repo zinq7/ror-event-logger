@@ -5,5 +5,5 @@ namespace RoRes
         public string eventType;
         public float timestamp;
         public float x, y, z;
-}
+    }
 }

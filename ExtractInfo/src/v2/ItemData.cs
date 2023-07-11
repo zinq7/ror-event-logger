@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ExtractInfo.src.v2
+namespace RoRes
 {
     public class StageLoot
     {
@@ -14,18 +14,17 @@ namespace ExtractInfo.src.v2
 
     public class UsefulInfo
     {
-        public float x, y;
-        public ItemTier tier;
-        public string pickupToken;
-        public string sourceToken;
-        public UsefulInfo(float x, float y, ItemTier tier, string pickupToken, string sourceToken)
-        {
-            this.x = x;
-            this.y = y;
-            this.tier = tier;
-            this.pickupToken = pickupToken;
-            this.sourceToken = sourceToken;
-        }
+        public float x, y, z;
+        public bool itemsJoined;
+        public List<ItemData> items;
+        public string interactorName;
+        public int id;
     }
+
+    public class ItemData {
+        public ItemTier tier;
+        public string itemName;
+    }
+
 
 }
