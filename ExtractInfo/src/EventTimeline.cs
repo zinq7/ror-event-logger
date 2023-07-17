@@ -1,12 +1,8 @@
 ﻿using RoR2;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Collections;
 using RoRes;
-using BepInEx;
 using UnityEngine;
-using EntityStates.VoidRaidCrab;
-using RoRGauntlet;
 
 namespace RoRGauntlet
 {

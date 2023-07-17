@@ -1,7 +1,5 @@
 ﻿using RoR2;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace RoRes
 {
@@ -22,8 +20,19 @@ namespace RoRes
     }
 
     public class ItemData {
-        public ItemTier tier;
+        public bool isItem;
+        public ItemTier? tier;
+        public NonItemType? nonItem;
         public string itemName;
+    }
+
+    public enum NonItemType
+    {
+        Nothing, 
+        Equip,
+        LunarEquip,
+        Drone,
+        ShrineEffect
     }
 
 
