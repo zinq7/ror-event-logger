@@ -20,7 +20,9 @@
         public const string WoodsEffect = "WOODS_EFFECT_NAME";
         public const string CombatEffect = "COMBAT_EFFECT_NAME";
         public const string BloodEffect = "BLOOD_EFFECT_NAME";
-        public const string ChanceFailEffect = "CHANCE_FAIL_EFFECT_NAME";
+        public const string ChanceFailEffect = "CHANCE_FAIL_EFFECT_NAME"; // FOR LOGGING FAILS
+        public const string GoldEffect = "GOLD_EFFECT_NAME"; // ORB EFFECTS
+        public const string NewtEffect = "BLUE_EFFECT_NAME"; // ORB EFFECTS
 
     }
 }
