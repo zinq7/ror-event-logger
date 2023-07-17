@@ -21,7 +21,7 @@ namespace RoRGauntlet
             // Get interactable tokens
             On.RoR2.PurchaseInteraction.Awake += LogAllInteractions;
 
-            // multishop special
+            // ACTUALLY POPULATING THE LOOT
 
         }
 
@@ -49,7 +49,7 @@ namespace RoRGauntlet
             orig(self);
 
             // blacklisted: multishop terminals themselves
-            if (self.displayNameToken == "MULTISHOP_TERMINAL_NAME") return;
+            if (self.displayNameToken == TokenHelper.MultishopTerminal) return;
 
             var pos = self.gameObject.transform.position;
             var info = new UsefulInfo()
@@ -66,14 +66,6 @@ namespace RoRGauntlet
 
         public void PopulateLoot(GameObject key, ItemData item) { populoot[key].items.Add(item); }
         public void AppendLoot() { info.stageLoots.Add(loot); }
-    }
-
-    public class SpecialTokens
-    {
-        public const string WhiteMultishop = "MULTISHOP_WHITE_NAME";
-        public const string GreenMultishop = "MULTISHOP_GREEN_NAME";
-        public const string EquipMultishop = "MULTISHOP_ORANGE_NAME";
-        public const string FallenMultishop = "MULTISHOP_SHORM_NAME";
     }
 
 }

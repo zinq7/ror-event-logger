@@ -71,7 +71,7 @@ namespace RoRGauntlet
 
             AddEvent(new BossSpawnEvent()
             {
-                boss = NameHelper.MithrixName,
+                boss = TokenHelper.MithrixName,
                 mountains = 0,
                 timestamp = Run.instance.GetRunStopwatch()
             }, self.gameObject);
@@ -418,11 +418,6 @@ namespace RoRGauntlet
             }, self.gameObject);
         }
 
-    }
-
-    public class NameHelper
-    {
-        public const string MithrixName = "BROTHER_BODY_NAME";
     }
 
 }
