@@ -14,27 +14,29 @@ namespace RoRGauntlet
         public static AdditionalInfo info;
         public static string FilePath = Paths.BepInExRootPath;
 
-        private EventTimeline timeliner;
-        private ItemLogger itemLogger;
+        private readonly EventTimeline timeliner;
+        private readonly ItemLogger itemLogger;
         public AdditionalMetadata()
         {
             Debug.Log("AWAKE STARTED");
 
             timeliner = new EventTimeline(); // event timeline
-            itemLogger = new ItemLogger();
+            itemLogger = new ItemLogger(); // item logs
            
             On.RoR2.GenericSkill.OnExecute += SkillLog;  // using skills
 
             On.RoR2.Run.Start += LoadInfo;
-            On.RoR2.Run.BeginGameOver += SaveToFile; // EXPORT ALL DATA (to a file)
+            On.RoR2.Run.OnClientGameOver += SaveToFile; // EXPORT ALL DATA (to a file)
         }
+
+
 
         private void LoadInfo(On.RoR2.Run.orig_Start orig, Run self)
         {
             orig(self);
             info = new AdditionalInfo(); // reset info
 
-            // artifacts
+            // artifacts TODO: fix
             var enumerator = RunArtifactManager.enabledArtifactsEnumerable.GetEnumerator();
             while (enumerator.Current != null)
             {
@@ -47,11 +49,12 @@ namespace RoRGauntlet
             timeliner.currentStage = null; // not to transfer over between runs
         }
 
-        private void SaveToFile(On.RoR2.Run.orig_BeginGameOver orig, Run self, GameEndingDef gameEndingDef)
+        private void SaveToFile(On.RoR2.Run.orig_OnClientGameOver orig, Run self, RunReport rep)
         {
             timeliner.AddEvent(new RunEndEvent() { timestamp = self.GetRunStopwatch(), x = 0, y = 0, z = 0 });
+            itemLogger.AppendLoot();
 
-            orig(self, gameEndingDef);
+            orig(self, rep);
 
             var logFolder = $"{FilePath}\\RunReports";
             Directory.CreateDirectory(logFolder);
@@ -63,6 +66,7 @@ namespace RoRGauntlet
         {
             orig(self);
 
+            if (self.skillNameToken == "") return;
             bool found = info.skillUses.TryGetValue(self.skillNameToken, out int numUses);
             info.skillUses[self.skillNameToken] = found ? numUses + 1 : 1;
         }

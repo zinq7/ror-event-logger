@@ -13,8 +13,7 @@ namespace RoRes
     public class UsefulInfo
     {
         public float x, y, z;
-        public bool itemsJoined;
-        public List<ItemData> items;
+        public List<ItemData> loot = new();
         public string interactorName;
         public int id;
     }
@@ -24,6 +23,11 @@ namespace RoRes
         public ItemTier? tier;
         public NonItemType? nonItem;
         public string nameToken;
+
+        public override string ToString()
+        {
+            return $"is: {isItem}, named: ${nameToken}";
+        }
     }
 
     public enum NonItemType

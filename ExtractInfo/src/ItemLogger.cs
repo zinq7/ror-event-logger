@@ -19,7 +19,7 @@ namespace RoRGauntlet
             On.RoR2.Run.BeginStage += LoadStage;
 
             // Get interactable tokens
-            On.RoR2.PurchaseInteraction.Awake += LogAllInteractions;
+            On.RoR2.PurchaseInteraction.OnEnable += LogAllInteractions;
             On.RoR2.MultiShopController.CreateTerminals += LogMultishopControllers;
 
             // LOOT
@@ -30,25 +30,28 @@ namespace RoRGauntlet
             On.RoR2.RouletteChestController.Start += ListItems;
 
             // Shrines
-            On.RoR2.ShrineBloodBehavior.AddShrineStack += (orig, self, third) =>
-                { orig(self, third); PopulateLoot(self.gameObject, GenerateShrineData(TokenHelper.BloodEffect)); };
-            On.RoR2.ShrineBossBehavior.AddShrineStack += (orig, self, third) =>
-                { orig(self, third); PopulateLoot(self.gameObject, GenerateShrineData(TokenHelper.MountainEffect)); };
-            On.RoR2.ShrineCombatBehavior.AddShrineStack += (orig, self, third) =>
-                { orig(self, third); PopulateLoot(self.gameObject, GenerateShrineData(TokenHelper.CombatEffect)); };
-            On.RoR2.ShrineRestackBehavior.AddShrineStack += (orig, self, third) =>
-                { orig(self, third); PopulateLoot(self.gameObject, GenerateShrineData(TokenHelper.OrderEffect)); };
-            On.RoR2.ShrineHealingBehavior.AddShrineStack += (orig, self, third) =>
-                { orig(self, third); PopulateLoot(self.gameObject, GenerateShrineData(TokenHelper.WoodsEffect)); };
+            On.RoR2.ShrineBloodBehavior.Start += (orig, self) =>
+                { orig(self); PopulateLoot(self.gameObject, GenerateShrineData(TokenHelper.BloodEffect)); };
+            On.RoR2.ShrineBossBehavior.Start += (orig, self) =>
+                { orig(self); PopulateLoot(self.gameObject, GenerateShrineData(TokenHelper.MountainEffect)); };
+            On.RoR2.ShrineCombatBehavior.Start += (orig, self) =>
+                { orig(self); PopulateLoot(self.gameObject, GenerateShrineData(TokenHelper.CombatEffect)); };
+            On.RoR2.ShrineRestackBehavior.Start += (orig, self) =>
+                { orig(self); PopulateLoot(self.gameObject, GenerateShrineData(TokenHelper.OrderEffect)); };
+            On.RoR2.ShrineHealingBehavior.Awake += (orig, self) =>
+                { orig(self); PopulateLoot(self.gameObject, GenerateShrineData(TokenHelper.WoodsEffect)); };
 
             // Statues
             On.RoR2.PortalStatueBehavior.GrantPortalEntry += (orig, self) =>
             {
                 orig(self);
+                if (!self.isActiveAndEnabled) return; // TODO: find component that makes them invis
                 string token = self.portalType == PortalStatueBehavior.PortalType.Shop ? TokenHelper.NewtEffect : TokenHelper.GoldEffect;
                 PopulateLoot(self.gameObject, GenerateShrineData(token));
             };
         }
+
+
 
         private void ListItems(On.RoR2.RouletteChestController.orig_Start orig, RouletteChestController self)
         {
@@ -114,16 +117,20 @@ namespace RoRGauntlet
             }
         }
 
+        HashSet<ShopTerminalBehavior> delDupes = new();
         private void SetPrinterIndex(On.RoR2.ShopTerminalBehavior.orig_SetPickupIndex orig, ShopTerminalBehavior self, PickupIndex newPickupIndex, bool newHidden)
         {
+            bool flag = (self.pickupIndex == newPickupIndex && self.hidden == newHidden) || !delDupes.Add(self);
             orig(self, newPickupIndex, newHidden);
 
             if (newPickupIndex == PickupIndex.none) return;
+            if (flag) return; // DON'T LOG UNCHANGES and THE FIRST OCCURANCE
+
 
             // MULTISHOP
             if (self.serverMultiShopController != null)
             {
-                var itemData = GenerateItemDataFromPickup(newPickupIndex, newHidden);
+                var itemData = GenerateItemDataFromPickup(newPickupIndex, !newHidden);
                 PopulateLoot(self.serverMultiShopController.gameObject, itemData);
             }
             // PRINTER
@@ -137,26 +144,25 @@ namespace RoRGauntlet
         {
             orig(self);
 
+            if (populoot[self.gameObject].loot.Count > 0) return; // no rerolling pls
             PopulateLoot(self.gameObject, GenerateItemDataFromPickup(self.dropPickup));
-        }
-
-        private void LoadStage(On.RoR2.Run.orig_BeginStage orig, Run self)
-        {
-            orig(self);
-
-            idCounter = self.stageClearCount * 100; // im lazy
-            AppendLoot();
-
-            populoot = new();
-            loot = new StageLoot() { stageName = self.nextStageScene.nameToken, stageNum = self.stageClearCount };
         }
 
         private void LoadStart(On.RoR2.Run.orig_Start orig, Run self)
         {
             orig(self);
 
+            loot = null;
+        }
+        private void LoadStage(On.RoR2.Run.orig_BeginStage orig, Run self)
+        {
+            orig(self);
+
+            idCounter = self.stageClearCount * 100; // im lazy
+            if (loot != null) AppendLoot();
+
             populoot = new();
-            loot = new StageLoot() { stageName = self.nextStageScene.nameToken, stageNum = self.nextStageScene.stageOrder };
+            loot = new StageLoot() { stageName = self.nextStageScene.nameToken, stageNum = self.stageClearCount + 1 };
         }
 
         private void LogMultishopControllers(On.RoR2.MultiShopController.orig_CreateTerminals orig, MultiShopController self)
@@ -164,7 +170,6 @@ namespace RoRGauntlet
             orig(self);
 
             //  multishops logged separately to join the terminals
-            var pos = self.gameObject.transform.position;
             string token;
 
             if (self.terminalGameObjects.Length == 2)
@@ -185,7 +190,7 @@ namespace RoRGauntlet
             populoot.Add(self.gameObject, info);
         }
 
-        private void LogAllInteractions(On.RoR2.PurchaseInteraction.orig_Awake orig, PurchaseInteraction self)
+        private void LogAllInteractions(On.RoR2.PurchaseInteraction.orig_OnEnable orig, PurchaseInteraction self)
         {
             orig(self);
 
@@ -200,8 +205,16 @@ namespace RoRGauntlet
         }
 
         // HELPER METHODS
-        public void PopulateLoot(GameObject key, ItemData item) { populoot[key].items.Add(item); }
-        public void AppendLoot() { Info.stageLoots.Add(loot); }
+        public void PopulateLoot(GameObject key, ItemData item)
+        {
+            if (!populoot.ContainsKey(key))
+            {
+                Debug.Log("fuck " + key + " this " + item);
+                return;
+            }
+            populoot[key].loot.Add(item);
+        }
+        public void AppendLoot() { Info.stageLoots.Add(loot); loot = null; delDupes = new(); }
 
         public UsefulInfo MakeUsefulInfoBase(GameObject obj)
         {
