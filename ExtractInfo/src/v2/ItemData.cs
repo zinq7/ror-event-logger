@@ -20,10 +20,10 @@ namespace RoRes
     }
 
     public class ItemData {
-        public bool isItem;
+        public bool isItem, isKnown;
         public ItemTier? tier;
         public NonItemType? nonItem;
-        public string itemName;
+        public string nameToken;
     }
 
     public enum NonItemType
