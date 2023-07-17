@@ -71,7 +71,7 @@ namespace RoRGauntlet
 
             AddEvent(new BossSpawnEvent()
             {
-                boss = TokenHelper.MithrixName,
+                boss = TokenHelper.MithrixBody,
                 mountains = 0,
                 timestamp = Run.instance.GetRunStopwatch()
             }, self.gameObject);
