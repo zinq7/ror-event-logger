@@ -19,17 +19,17 @@ namespace RoRGauntlet
 
             // teleporter events
             TeleporterInteraction.onTeleporterFinishGlobal += (tp) =>
-                AddEvent(new TeleportHitEvent() { timestamp = Run.instance.GetRunStopwatch() / 1000f }, tp.gameObject);
+                AddEvent(new TeleportHitEvent() { timestamp = Run.instance.GetRunStopwatch() * 1000f }, tp.gameObject);
             TeleporterInteraction.onTeleporterChargedGlobal += (tp) =>
-                AddEvent(new ChargeEndEvent() { timestamp = Run.instance.GetRunStopwatch() / 1000f, chargeType = ChargeType.teleporter }, tp.gameObject);
+                AddEvent(new ChargeEndEvent() { timestamp = Run.instance.GetRunStopwatch() * 1000f, chargeType = ChargeType.teleporter }, tp.gameObject);
             TeleporterInteraction.onTeleporterBeginChargingGlobal += (tp) =>
-                AddEvent(new ChargeStartEvent() { timestamp = Run.instance.GetRunStopwatch() / 1000f, chargeType = ChargeType.teleporter }, tp.gameObject);
+                AddEvent(new ChargeStartEvent() { timestamp = Run.instance.GetRunStopwatch() * 1000f, chargeType = ChargeType.teleporter }, tp.gameObject);
 
             // pillars
             On.RoR2.MoonBatteryMissionController.OnBatteryCharged += (battery, charged, yes) =>
             {
                 battery(charged, yes);
-                AddEvent(new ChargeEndEvent() { timestamp = Run.instance.GetRunStopwatch() / 1000f, chargeType = ChargeType.pillar }, yes.gameObject);
+                AddEvent(new ChargeEndEvent() { timestamp = Run.instance.GetRunStopwatch() * 1000f, chargeType = ChargeType.pillar }, yes.gameObject);
             };
 
             // inventory events
@@ -73,7 +73,7 @@ namespace RoRGauntlet
             {
                 boss = TokenHelper.MithrixBody,
                 mountains = 0,
-                timestamp = Run.instance.GetRunStopwatch() / 1000f
+                timestamp = Run.instance.GetRunStopwatch() * 1000f
             }, self.gameObject);
         }
 
@@ -87,7 +87,7 @@ namespace RoRGauntlet
             AddEvent(new MiscEvent()
             {
                 eventInfo = "AWU Egg",
-                timestamp = Run.instance.GetRunStopwatch() / 1000f
+                timestamp = Run.instance.GetRunStopwatch() * 1000f
             }, self.gameObject);
         }
 
@@ -98,7 +98,7 @@ namespace RoRGauntlet
             AddEvent(new MiscEvent()
             {
                 eventInfo = "Void Seed",
-                timestamp = Run.instance.GetRunStopwatch() / 1000f
+                timestamp = Run.instance.GetRunStopwatch() * 1000f
             }, self.gameObject);
         }
 
@@ -108,7 +108,7 @@ namespace RoRGauntlet
 
             AddEvent(new FamilyEventEvent()
             {
-                timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                timestamp = Run.instance.GetRunStopwatch() * 1000f,
                 familyBodyName = self.categories[0].cards[0].spawnCard.name,
                 x = 0,
                 y = 0,
@@ -135,7 +135,7 @@ namespace RoRGauntlet
                 yield return new WaitForSeconds(1);
                 AddEvent(new CharacterExistEvent()
                 {
-                    timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                    timestamp = Run.instance.GetRunStopwatch() * 1000f,
                     health = character.healthComponent.combinedHealthFraction
                 }, character.gameObject);
             }
@@ -152,7 +152,7 @@ namespace RoRGauntlet
                 AddEvent(new DeathEvent()
                 {
                     killer = BodyCatalog.GetBodyName(self.GetKillerBodyIndex()),
-                    timestamp = Run.instance.GetRunStopwatch() / 1000f
+                    timestamp = Run.instance.GetRunStopwatch() * 1000f
                 }, self.gameObject);
             }
 
@@ -165,7 +165,7 @@ namespace RoRGauntlet
 
             AddEvent(new PizzaExitEvent()
             {
-                timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                timestamp = Run.instance.GetRunStopwatch() * 1000f,
                 mithrixHealth = self.characterBody.healthComponent.health,
             }, self.gameObject);
         }
@@ -176,7 +176,7 @@ namespace RoRGauntlet
 
             AddEvent(new PizzaEnterEvent()
             {
-                timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                timestamp = Run.instance.GetRunStopwatch() * 1000f,
                 mithrixHealth = self.characterBody.healthComponent.health
             });
         }
@@ -212,7 +212,7 @@ namespace RoRGauntlet
                 // lost normal
                 AddEvent(new InventoryEvent()
                 {
-                    timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                    timestamp = Run.instance.GetRunStopwatch() * 1000f,
                     transactionType = Transaction.Ego,
                     quantity = -1,
                     item = new Item() { englishName = Eng(itemDef.nameToken), tier = itemDef.tier }
@@ -221,7 +221,7 @@ namespace RoRGauntlet
                 // gain ego
                 AddEvent(new InventoryEvent()
                 {
-                    timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                    timestamp = Run.instance.GetRunStopwatch() * 1000f,
                     transactionType = Transaction.Ego,
                     quantity = 1,
                     item = new Item() { englishName = Eng(DLC1Content.Items.LunarSun.nameToken), tier = DLC1Content.Items.LunarSun.tier }
@@ -237,7 +237,7 @@ namespace RoRGauntlet
             // lost normals
             AddEvent(new InventoryEvent()
             {
-                timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                timestamp = Run.instance.GetRunStopwatch() * 1000f,
                 transactionType = Transaction.Corrupted,
                 quantity = -inventory.GetItemCount(normalItem),
                 item = new Item() { englishName = Eng(normalItem.nameToken), tier = normalItem.tier }
@@ -246,7 +246,7 @@ namespace RoRGauntlet
             // gain voids
             AddEvent(new InventoryEvent()
             {
-                timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                timestamp = Run.instance.GetRunStopwatch() * 1000f,
                 transactionType = Transaction.Corrupted,
                 quantity = inventory.GetItemCount(normalItem),
                 item = new Item() { englishName = Eng(voidItem.nameToken), tier = voidItem.tier }
@@ -261,7 +261,7 @@ namespace RoRGauntlet
 
             AddEvent(new BossKillEvent()
             {
-                timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                timestamp = Run.instance.GetRunStopwatch() * 1000f,
                 boss = self.bossMemories[0].cachedBody.baseNameToken
             }, self.gameObject);
         }
@@ -272,7 +272,7 @@ namespace RoRGauntlet
 
             AddEvent(new BossSpawnEvent()
             {
-                timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                timestamp = Run.instance.GetRunStopwatch() * 1000f,
                 boss = self.bossMemories[0].cachedBody.baseNameToken,
                 mountains = self.bonusRewardCount
             }, self.gameObject);
@@ -295,7 +295,7 @@ namespace RoRGauntlet
                 AddEvent(new InventoryEvent()
                 {
                     item = new Item() { englishName = Eng(item.nameToken), tier = item.tier },
-                    timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                    timestamp = Run.instance.GetRunStopwatch() * 1000f,
                     transactionType = Transaction.Print,
                     quantity = -1,
                     x = pos.x,
@@ -315,7 +315,7 @@ namespace RoRGauntlet
             AddEvent(new InventoryEvent()
             {
                 item = new Item() { englishName = Eng(item.nameToken), tier = item.tier },
-                timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                timestamp = Run.instance.GetRunStopwatch() * 1000f,
                 transactionType = Transaction.Scrap,
                 quantity = (characterBody.inventory.GetItemCount(item) > 10) ? -10 : -characterBody.inventory.GetItemCount(item),
                 x = pos.x,
@@ -337,7 +337,7 @@ namespace RoRGauntlet
                 AddEvent(new InventoryEvent()
                 {
                     item = new Item() { englishName = Eng(item.nameToken), tier = item.tier },
-                    timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                    timestamp = Run.instance.GetRunStopwatch() * 1000f,
                     transactionType = Transaction.Pickup,
                     quantity = 1, // gained 1 item per pickup
                     x = pos.x,
@@ -358,7 +358,7 @@ namespace RoRGauntlet
                 {
                     stageNum = currentStage.stageNum,
                     englishName = currentStage.englishName,
-                    timestamp = Run.instance.GetRunStopwatch() / 1000f
+                    timestamp = Run.instance.GetRunStopwatch() * 1000f
                 }); // end stage
             }
 
@@ -367,7 +367,7 @@ namespace RoRGauntlet
 
             currentStage = new StageStartEvent()
             {
-                timestamp = Run.instance.GetRunStopwatch() / 1000f,
+                timestamp = Run.instance.GetRunStopwatch() * 1000f,
                 stageNum = Run.instance.stageClearCount + 1,
                 englishName = Eng(self.nextStageScene.nameToken)
             };
@@ -378,7 +378,7 @@ namespace RoRGauntlet
 
         public void AddEvent(RunEvent ev, GameObject posObj = null)
         {
-            if (ev.timestamp == default) ev.timestamp = Run.instance.GetRunStopwatch() / 1000f;
+            if (ev.timestamp == default) ev.timestamp = Run.instance.GetRunStopwatch() * 1000f;
             if (posObj != null)
             {
                 var pos = posObj.transform.position;
