@@ -40,6 +40,7 @@ namespace RoRGauntlet
             // boss events
             On.RoR2.BossGroup.OnEnable += AddBoss;
             On.RoR2.BossGroup.OnDefeatedServer += KillBoss;
+            On.EntityStates.Missions.BrotherEncounter.PreEncounter.OnEnter += SpawnMithry;
 
             // special item events
             On.RoR2.Items.ContagiousItemManager.StepInventoryInfection += ProcessVoidItems;
@@ -62,6 +63,18 @@ namespace RoRGauntlet
             //On.RoR2.PortalSpawner.OnWillSpawnUpdated += SpawnPortals;
             //On.RoR2.PortalSpawner.Start += SpawnOrbs;
 
+        }
+
+        private void SpawnMithry(On.EntityStates.Missions.BrotherEncounter.PreEncounter.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.PreEncounter self)
+        {
+            orig(self);
+
+            AddEvent(new BossSpawnEvent()
+            {
+                boss = NameHelper.MithrixName,
+                mountains = 0,
+                timestamp = Run.instance.GetRunStopwatch()
+            }, self.gameObject);
         }
 
         bool delDupes = false;
@@ -130,7 +143,7 @@ namespace RoRGauntlet
             activeCharacterTrackers.Remove(character); // inactive
         }
 
-        
+
 
         private void GetReqt(On.RoR2.CharacterMaster.orig_OnBodyDeath orig, CharacterMaster self, CharacterBody body)
         {
@@ -405,6 +418,11 @@ namespace RoRGauntlet
             }, self.gameObject);
         }
 
+    }
+
+    public class NameHelper
+    {
+        public const string MithrixName = "BROTHER_BODY_NAME";
     }
 
 }
