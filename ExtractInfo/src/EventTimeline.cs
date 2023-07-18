@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections;
 using RoRes;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace RoRGauntlet
 {
@@ -10,7 +11,7 @@ namespace RoRGauntlet
     {
         public AdditionalMetadata.AdditionalInfo Info => AdditionalMetadata.info;
         public StageStartEvent currentStage;
-        private readonly Dictionary<CharacterBody, Coroutine> activeCharacterTrackers = new();
+        private readonly Dictionary<CharacterMaster, Coroutine> activeCharacterTrackers = new();
 
         public EventTimeline()
         {
@@ -52,7 +53,8 @@ namespace RoRGauntlet
 
             // character death
             On.RoR2.CharacterMaster.OnBodyDeath += GetReqt;
-            CharacterMaster.onStartGlobal += LogCharacterPlease;
+            CharacterMaster.onCharacterMasterDiscovered += LogCharacterPlease;
+           
 
             // things you'd see in the chat
             On.RoR2.FamilyDirectorCardCategorySelection.OnSelected += LogFams;
@@ -115,32 +117,45 @@ namespace RoRGauntlet
                 z = 0
             });
         }
-
         private void LogCharacterPlease(CharacterMaster self)
         {
-            if (self.GetBody() != null && self.GetBody().isPlayerControlled)
+            Debug.Log("found player " + self);
+            
+            // TODO: VERIFY AND FIX
+            if (self.playerCharacterMasterController != null)
             {
-                var bod = self.GetBody();
+                Debug.Log("That was the local player, nice");  
+                var pos = self.gameObject.transform.position;
+                AddEvent(new SpawnInEvent()
+                {
+                    timestamp = Run.instance.GetRunStopwatch() * 1000f,
+                    x = pos.x,
+                    z = pos.z,
+                    y = pos.y,
+                    firstSpawn = Run.instance.stageClearCount == 0,
+                    character = self.GetBody()?.baseNameToken,
+                });
 
-                if (activeCharacterTrackers.ContainsKey(bod)) return;
-                activeCharacterTrackers.Add(bod, StartCoroutine(CheckCharacterPos(bod)));
+                if (activeCharacterTrackers.ContainsKey(self)) return;
+                activeCharacterTrackers.Add(self, StartCoroutine(CheckCharacterPos(self)));
             }
         }
 
-        private IEnumerator CheckCharacterPos(CharacterBody character)
+        private IEnumerator CheckCharacterPos(CharacterMaster master)
         {
-            Debug.Log("Starting Logs for " + character.ToString());
-            while (character != null)
+            Debug.Log("Starting Logs for " + master.ToString());
+            while (master != null && Run.instance != null)
             {
+                var body = master.GetBody();
                 yield return new WaitForSeconds(1);
                 AddEvent(new CharacterExistEvent()
                 {
                     timestamp = Run.instance.GetRunStopwatch() * 1000f,
-                    health = character.healthComponent.combinedHealthFraction
-                }, character.gameObject);
+                    health = body.healthComponent.combinedHealthFraction
+                }, body.gameObject);
             }
-            Debug.Log("Removing " + character.ToString());
-            activeCharacterTrackers.Remove(character); // inactive
+            Debug.Log("Removing " + master.ToString());
+            activeCharacterTrackers.Remove(master); // inactive
         }
 
 
