@@ -166,7 +166,7 @@ namespace RoRGauntlet
             {
                 AddEvent(new DeathEvent()
                 {
-                    killer = BodyCatalog.GetBodyName(self.GetKillerBodyIndex()),
+                    killer = BodyCatalog.GetBodyPrefab(self.GetKillerBodyIndex()).GetComponent<CharacterBody>().baseNameToken,
                     timestamp = Run.instance.GetRunStopwatch() * 1000f
                 }, self.gameObject);
             }

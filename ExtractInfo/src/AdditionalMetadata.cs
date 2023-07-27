@@ -51,7 +51,7 @@ namespace RoRGauntlet
 
         private void SaveToFile(On.RoR2.Run.orig_OnClientGameOver orig, Run self, RunReport rep)
         {
-            timeliner.AddEvent(new RunEndEvent() { timestamp = self.GetRunStopwatch(), x = 0, y = 0, z = 0 });
+            timeliner.AddEvent(new RunEndEvent() { timestamp = self.GetRunStopwatch() * 1000, x = 0, y = 0, z = 0 });
             itemLogger.AppendLoot();
 
             orig(self, rep);
