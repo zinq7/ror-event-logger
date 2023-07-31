@@ -39,7 +39,7 @@ namespace RoRGauntlet
             On.RoR2.PurchaseInteraction.CreateItemTakenOrb += PrintItem;
 
             // boss events
-            On.RoR2.BossGroup.OnEnable += AddBoss;
+            On.RoR2.BossGroup.AddBossMemory += AddBoss;
             On.RoR2.BossGroup.OnDefeatedServer += KillBoss;
             On.EntityStates.Missions.BrotherEncounter.PreEncounter.OnEnter += SpawnMithry;
 
@@ -120,12 +120,13 @@ namespace RoRGauntlet
         private void LogCharacterPlease(CharacterMaster self)
         {
             Debug.Log("found player " + self);
-            
+
             // TODO: VERIFY AND FIX
-            if (self.playerCharacterMasterController != null)
+            if (self.ToString().Contains("Player"))
             {
                 Debug.Log("That was the local player, nice");  
                 var pos = self.gameObject.transform.position;
+
                 AddEvent(new SpawnInEvent()
                 {
                     timestamp = Run.instance.GetRunStopwatch() * 1000f,
@@ -166,7 +167,7 @@ namespace RoRGauntlet
             {
                 AddEvent(new DeathEvent()
                 {
-                    killer = BodyCatalog.GetBodyPrefab(self.GetKillerBodyIndex()).GetComponent<CharacterBody>().baseNameToken,
+                    killer = self.GetKillerBodyIndex() == (BodyIndex)(-1) ? "THE_PLANET_TOKEN" : BodyCatalog.GetBodyPrefab(self.GetKillerBodyIndex()).GetComponent<CharacterBody>().baseNameToken,
                     timestamp = Run.instance.GetRunStopwatch() * 1000f
                 }, self.gameObject);
             }
@@ -281,16 +282,16 @@ namespace RoRGauntlet
             }, self.gameObject);
         }
 
-        private void AddBoss(On.RoR2.BossGroup.orig_OnEnable orig, BossGroup self)
+        private int AddBoss(On.RoR2.BossGroup.orig_AddBossMemory orig, BossGroup self, CharacterMaster master)
         {
-            orig(self);
-
             AddEvent(new BossSpawnEvent()
             {
                 timestamp = Run.instance.GetRunStopwatch() * 1000f,
-                boss = self.bossMemories[0].cachedBody.baseNameToken,
+                boss = master.GetBody()?.baseNameToken,
                 mountains = self.bonusRewardCount
             }, self.gameObject);
+
+            return orig(self, master);
         }
 
         bool cursedIgnoreNextBecauseImLazy = false;
@@ -393,7 +394,7 @@ namespace RoRGauntlet
 
         public void AddEvent(RunEvent ev, GameObject posObj = null)
         {
-            if (ev.timestamp == default) ev.timestamp = Run.instance.GetRunStopwatch() * 1000f;
+            if (ev.timestamp == default && Run.instance) ev.timestamp = Run.instance.GetRunStopwatch() * 1000f;
             if (posObj != null)
             {
                 var pos = posObj.transform.position;

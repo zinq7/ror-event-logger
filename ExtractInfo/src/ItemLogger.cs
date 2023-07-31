@@ -144,7 +144,7 @@ namespace RoRGauntlet
         {
             orig(self);
 
-            if (populoot[self.gameObject].loot.Count > 0) return; // no rerolling pls
+            if (!populoot.ContainsKey(self.gameObject) || populoot[self.gameObject].loot.Count > 0) return; // no rerolling pls
             PopulateLoot(self.gameObject, GenerateItemDataFromPickup(self.dropPickup));
         }
 
@@ -193,6 +193,8 @@ namespace RoRGauntlet
         private void LogAllInteractions(On.RoR2.PurchaseInteraction.orig_OnEnable orig, PurchaseInteraction self)
         {
             orig(self);
+
+            if (self.displayNameToken == null) return;
 
             // blacklisted: multishop terminals themselves
             if (self.displayNameToken == TokenHelper.MultishopTerminal) return;

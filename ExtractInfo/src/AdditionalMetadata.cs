@@ -33,7 +33,6 @@ namespace RoRGauntlet
 
         private void LoadInfo(On.RoR2.Run.orig_Start orig, Run self)
         {
-            orig(self);
             info = new AdditionalInfo(); // reset info
 
             // artifacts TODO: fix
@@ -47,6 +46,8 @@ namespace RoRGauntlet
             info.player = SteamworksClientManager.instance.steamworksClient.Username; // steam username
 
             timeliner.currentStage = null; // not to transfer over between runs
+
+            orig(self);
         }
 
         private void SaveToFile(On.RoR2.Run.orig_OnClientGameOver orig, Run self, RunReport rep)
