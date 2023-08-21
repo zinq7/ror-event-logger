@@ -271,14 +271,24 @@ namespace RoRGauntlet
             return orig(inventory, originalItem, limit, isForced);
         }
 
+        string rememberBossName;
         private void KillBoss(On.RoR2.BossGroup.orig_OnDefeatedServer orig, BossGroup self)
         {
             orig(self);
 
+            string bossName;
+            if (self.bossMemories is null)
+            {
+                bossName = rememberBossName;
+            } else
+            {
+                bossName = self.bossMemories[0].cachedBody.baseNameToken;
+            }
+
             AddEvent(new BossKillEvent()
             {
                 timestamp = Run.instance.GetRunStopwatch() * 1000f,
-                boss = self.bossMemories[0].cachedBody.baseNameToken
+                boss = bossName
             }, self.gameObject);
         }
 
@@ -290,6 +300,8 @@ namespace RoRGauntlet
                 boss = master.GetBody()?.baseNameToken,
                 mountains = self.bonusRewardCount
             }, self.gameObject);
+
+            rememberBossName = master.GetBody()?.baseNameToken;
 
             return orig(self, master);
         }
