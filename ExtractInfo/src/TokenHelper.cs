@@ -39,6 +39,7 @@ namespace RoRGauntlet
 
         // misc tokens
         public const string NoPickup = "NOTHING_PICKUP_NAME";
+        public const string TeleporterToken = "TELEPORTER_NAME";
 
     }
 }

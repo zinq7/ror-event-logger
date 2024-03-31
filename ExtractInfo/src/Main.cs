@@ -18,7 +18,9 @@ namespace ExtractInfo
         public void Awake()
         {
             new AdditionalMetadata();
+            instance = this;
         }
 
+        public static Main instance;
     }
 }

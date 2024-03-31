@@ -7,6 +7,7 @@ namespace RoRes
 
     public class CharacterExistEvent : RunEvent {
         public float health;
+        public int cash;
     }
 
     public class SpawnInEvent : RunEvent

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using RoRes;
 using UnityEngine;
+using IL.RoR2.UI;
 
 namespace RoRGauntlet
 {
@@ -16,7 +17,7 @@ namespace RoRGauntlet
         {
             // reset stage stuff
             On.RoR2.Run.Start += LoadStart;
-            On.RoR2.Run.BeginStage += LoadStage;
+            On.RoR2.Run.AdvanceStage += LoadStage;
 
             // Get interactable tokens
             On.RoR2.PurchaseInteraction.OnEnable += LogAllInteractions;
@@ -49,9 +50,22 @@ namespace RoRGauntlet
                 string token = self.portalType == PortalStatueBehavior.PortalType.Shop ? TokenHelper.NewtEffect : TokenHelper.GoldEffect;
                 PopulateLoot(self.gameObject, GenerateShrineData(token));
             };
+
+            // teleporter
+            On.RoR2.TeleporterInteraction.OnEnable += AddTeleporter;
         }
 
+        private void AddTeleporter(On.RoR2.TeleporterInteraction.orig_OnEnable orig, TeleporterInteraction self)
+        {
+            orig(self);
 
+            var info = MakeUsefulInfoBase(self.gameObject);
+            info.interactorName = TokenHelper.TeleporterToken;
+
+            loot.stageLoot.Add(info);
+            populoot.Add(self.gameObject, info);
+
+        }
 
         private void ListItems(On.RoR2.RouletteChestController.orig_Start orig, RouletteChestController self)
         {
@@ -144,25 +158,37 @@ namespace RoRGauntlet
         {
             orig(self);
 
-            if (!populoot.ContainsKey(self.gameObject) || populoot[self.gameObject].loot.Count > 0) return; // no rerolling pls
+            if (self == null || !populoot.ContainsKey(self.gameObject) || populoot[self.gameObject].loot?.Count > 0) return; // no rerolling pls
             PopulateLoot(self.gameObject, GenerateItemDataFromPickup(self.dropPickup));
         }
 
         private void LoadStart(On.RoR2.Run.orig_Start orig, Run self)
         {
+            loot = new() { stageName = "The VOID" };
+            idCounter = -100;
+            populoot = new();
+
             orig(self);
 
-            loot = null;
+            // redundant to check priority
+            loot = new() { stageName = self.nextStageScene.cachedName, stageNum = 1 };
+            idCounter = 0;
+            populoot = new();
         }
-        private void LoadStage(On.RoR2.Run.orig_BeginStage orig, Run self)
+        private void LoadStage(On.RoR2.Run.orig_AdvanceStage orig, Run self, SceneDef nextStage)
         {
-            orig(self);
+            if (loot != null) AppendLoot();
+            populoot = new();
 
             idCounter = self.stageClearCount * 100; // im lazy
-            if (loot != null) AppendLoot();
+            loot = new StageLoot()
+            {
+                stageName = nextStage.cachedName,
+                stageNum = self.stageClearCount + 1,
+                stageLoot = new()
+            };
 
-            populoot = new();
-            loot = new StageLoot() { stageName = self.nextStageScene.nameToken, stageNum = self.stageClearCount + 1 };
+            orig(self, nextStage);
         }
 
         private void LogMultishopControllers(On.RoR2.MultiShopController.orig_CreateTerminals orig, MultiShopController self)
@@ -194,10 +220,12 @@ namespace RoRGauntlet
         {
             orig(self);
 
-            if (self.displayNameToken == null) return;
+            if (self == null || self.displayNameToken == null) return;
 
             // blacklisted: multishop terminals themselves
             if (self.displayNameToken == TokenHelper.MultishopTerminal) return;
+
+            if (!self.isActiveAndEnabled) return; // disabled pillars and such
 
             var info = MakeUsefulInfoBase(self.gameObject);
             info.interactorName = self.displayNameToken;
@@ -209,11 +237,12 @@ namespace RoRGauntlet
         // HELPER METHODS
         public void PopulateLoot(GameObject key, ItemData item)
         {
-            if (!populoot.ContainsKey(key))
+            if (key == null || item == null || !populoot.ContainsKey(key))
             {
                 Debug.Log("fuck " + key + " this " + item);
                 return;
             }
+
             populoot[key].loot.Add(item);
         }
         public void AppendLoot() { Info.stageLoots.Add(loot); loot = null; delDupes = new(); }
@@ -226,7 +255,8 @@ namespace RoRGauntlet
                 x = pos.x,
                 y = pos.y,
                 z = pos.z,
-                id = idCounter++
+                id = idCounter++,
+                loot = new()
             };
         }
 

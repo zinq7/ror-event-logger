@@ -3,20 +3,23 @@ using System.Collections.Generic;
 using System.Collections;
 using RoRes;
 using UnityEngine;
+using ExtractInfo;
 using UnityEngine.UIElements;
 
 namespace RoRGauntlet
 {
-    public class EventTimeline : MonoBehaviour
+    public class EventTimeline
     {
         public AdditionalMetadata.AdditionalInfo Info => AdditionalMetadata.info;
         public StageStartEvent currentStage;
         private readonly Dictionary<CharacterMaster, Coroutine> activeCharacterTrackers = new();
+        private readonly Dictionary<CharacterBody, Coroutine> activeCharacterBodyTrackers = new();
+
 
         public EventTimeline()
         {
             // stage splitting and run data
-            On.RoR2.Run.BeginStage += StageSplit;
+            On.RoR2.Run.AdvanceStage += StageSplit;
 
             // teleporter events
             TeleporterInteraction.onTeleporterFinishGlobal += (tp) =>
@@ -53,8 +56,7 @@ namespace RoRGauntlet
 
             // character death
             On.RoR2.CharacterMaster.OnBodyDeath += GetReqt;
-            CharacterMaster.onCharacterMasterDiscovered += LogCharacterPlease;
-           
+            On.RoR2.CharacterMaster.OnBodyStart += LogCharacterBetter; ;
 
             // things you'd see in the chat
             On.RoR2.FamilyDirectorCardCategorySelection.OnSelected += LogFams;
@@ -64,8 +66,9 @@ namespace RoRGauntlet
             // portals and orbs
             //On.RoR2.PortalSpawner.OnWillSpawnUpdated += SpawnPortals;
             //On.RoR2.PortalSpawner.Start += SpawnOrbs;
-
         }
+
+
 
         private void SpawnMithry(On.EntityStates.Missions.BrotherEncounter.PreEncounter.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.PreEncounter self)
         {
@@ -117,14 +120,15 @@ namespace RoRGauntlet
                 z = 0
             });
         }
-        private void LogCharacterPlease(CharacterMaster self)
-        {
-            Debug.Log("found player " + self);
 
-            // TODO: VERIFY AND FIX
-            if (self.ToString().Contains("Player"))
+        private void LogCharacterBetter(On.RoR2.CharacterMaster.orig_OnBodyStart orig, CharacterMaster self, CharacterBody body)
+        {
+            orig(self, body);
+
+            if (body.isPlayerControlled)
             {
-                Debug.Log("That was the local player, nice");  
+                Debug.Log("Found the local player!!");
+
                 var pos = self.gameObject.transform.position;
 
                 AddEvent(new SpawnInEvent()
@@ -138,27 +142,36 @@ namespace RoRGauntlet
                 });
 
                 if (activeCharacterTrackers.ContainsKey(self)) return;
-                activeCharacterTrackers.Add(self, StartCoroutine(CheckCharacterPos(self)));
+                activeCharacterTrackers.Add(self, Main.instance.StartCoroutine(CheckCharacterPos(self)));
             }
         }
 
         private IEnumerator CheckCharacterPos(CharacterMaster master)
         {
-            Debug.Log("Starting Logs for " + master.ToString());
+            var body = master.GetBody();
             while (master != null && Run.instance != null)
             {
-                var body = master.GetBody();
-                yield return new WaitForSeconds(1);
-                AddEvent(new CharacterExistEvent()
+                // Debug.Log("Pinging " + body);
+                if (body == null)
                 {
-                    timestamp = Run.instance.GetRunStopwatch() * 1000f,
-                    health = body.healthComponent.combinedHealthFraction
-                }, body.gameObject);
+                    body = master.GetBody();
+                }
+                else
+                {
+                    AddEvent(new CharacterExistEvent()
+                    {
+                        timestamp = Run.instance.GetRunStopwatch() * 1000f,
+                        health = body.healthComponent.combinedHealthFraction,
+                        cash = master.money
+                    }, body.gameObject);
+
+                }
+
+                yield return new WaitForSeconds(1);
             }
             Debug.Log("Removing " + master.ToString());
             activeCharacterTrackers.Remove(master); // inactive
         }
-
 
 
         private void GetReqt(On.RoR2.CharacterMaster.orig_OnBodyDeath orig, CharacterMaster self, CharacterBody body)
@@ -280,7 +293,8 @@ namespace RoRGauntlet
             if (self.bossMemories is null)
             {
                 bossName = rememberBossName;
-            } else
+            }
+            else
             {
                 bossName = self.bossMemories[0].cachedBody.baseNameToken;
             }
@@ -377,7 +391,7 @@ namespace RoRGauntlet
 
 
 
-        private void StageSplit(On.RoR2.Run.orig_BeginStage orig, Run self)
+        private void StageSplit(On.RoR2.Run.orig_AdvanceStage orig, Run self, SceneDef nextStage)
         {
             if (currentStage is not null)
             {
@@ -391,16 +405,16 @@ namespace RoRGauntlet
             }
 
 
-            orig(self);
+            orig(self, nextStage);
 
             currentStage = new StageStartEvent()
             {
                 timestamp = Run.instance.GetRunStopwatch() * 1000f,
                 stageNum = Run.instance.stageClearCount + 1,
-                englishName = Eng(self.nextStageScene.nameToken)
+                englishName = Eng(nextStage)
             };
 
-            Debug.Log("Starting split: " + Eng(self.nextStageScene.nameToken));
+            Debug.Log("Starting split: " + Eng(nextStage));
             AddEvent(currentStage);
         }
 
@@ -421,6 +435,12 @@ namespace RoRGauntlet
         private string Eng(string nameToken)
         {
             return nameToken; // just token now, better 
+        }
+
+        private string Eng(SceneDef scene)
+        {
+            Debug.Log("CACHED NAME IS" + scene.cachedName);
+            return scene.nameToken;
         }
 
 
