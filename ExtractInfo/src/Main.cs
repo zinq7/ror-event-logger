@@ -7,7 +7,7 @@ using UnityEngine;
 namespace ExtractInfo
 {
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
-
+    [BepInDependency("RoRGauntlet", BepInDependency.DependencyFlags.SoftDependency)]
     public class Main : BaseUnityPlugin
     {
         public const string PluginGUID = PluginAuthor + "." + PluginName;

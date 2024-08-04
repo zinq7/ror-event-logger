@@ -6,6 +6,7 @@ using BepInEx;
 using System.IO;
 using System;
 using UnityEngine;
+using System.Net.Http;
 
 namespace RoRGauntlet
 {
@@ -43,7 +44,9 @@ namespace RoRGauntlet
                 enumerator.MoveNext();
             }
             info.difficulty = self.selectedDifficulty.ToString();
-            info.player = SteamworksClientManager.instance.steamworksClient.Username; // steam username
+
+            // doesn't work with amd
+            //info.player = SteamworksClientManager.instance.steamworksClient.Username; // steam username
 
             timeliner.currentStage = null; // not to transfer over between runs
 
@@ -60,7 +63,10 @@ namespace RoRGauntlet
             var logFolder = $"{FilePath}\\RunReports";
             Directory.CreateDirectory(logFolder);
 
-            File.WriteAllText(logFolder + "\\" + DateTime.UtcNow.ToString("yyyy_MM_dd_HH_mm_ss") + ".run.json", GetJSON()); // cool
+            var filePath = logFolder + "\\" + DateTime.UtcNow.ToString("yyyy_MM_dd_HH_mm_ss") + ".run.json";
+            File.WriteAllText(filePath, GetJSON());
+
+            RoRGauntletWrapper._UploadRun(filePath);
         }
 
         private void SkillLog(On.RoR2.GenericSkill.orig_OnExecute orig, GenericSkill self)
