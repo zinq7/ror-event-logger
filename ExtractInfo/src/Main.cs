@@ -1,4 +1,5 @@
 using BepInEx;
+using BepInEx.Logging;
 using RoR2;
 using RoRGauntlet;
 using System;
@@ -17,6 +18,7 @@ namespace ExtractInfo
 
         public void Awake()
         {
+            BepInEx.Logging.Logger.Listeners.Add(new RoRLogListener());
             new AdditionalMetadata();
             instance = this;
         }

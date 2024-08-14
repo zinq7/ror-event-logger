@@ -23,6 +23,8 @@ namespace RoRGauntlet
 
             timeliner = new EventTimeline(); // event timeline
             itemLogger = new ItemLogger(); // item logs
+
+            RoRGauntletWrapper._InitVars();
            
             On.RoR2.GenericSkill.OnExecute += SkillLog;  // using skills
 
