@@ -4,16 +4,14 @@ using System.Collections;
 using RoRes;
 using UnityEngine;
 using ExtractInfo;
-using UnityEngine.UIElements;
 
-namespace RoRGauntlet
+namespace Extractinfo
 {
     public class EventTimeline
     {
         public AdditionalMetadata.AdditionalInfo Info => AdditionalMetadata.info;
         public StageStartEvent currentStage;
         private readonly Dictionary<CharacterMaster, Coroutine> activeCharacterTrackers = new();
-        private readonly Dictionary<CharacterBody, Coroutine> activeCharacterBodyTrackers = new();
 
 
         public EventTimeline()

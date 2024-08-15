@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using RoRes;
 using UnityEngine;
-using IL.RoR2.UI;
 
-namespace RoRGauntlet
+namespace Extractinfo
 {
     public class ItemLogger : MonoBehaviour
     {
@@ -25,7 +24,7 @@ namespace RoRGauntlet
 
             // LOOT
             On.RoR2.ChestBehavior.Roll += LogChestRoll;
-            On.RoR2.ShopTerminalBehavior.SetPickupIndex += SetPrinterIndex;
+            On.RoR2.ShopTerminalBehavior.GenerateNewPickupServer_bool += SetPrinterIndex;
             On.RoR2.OptionChestBehavior.Roll += LogAllLoot;
             On.RoR2.ShrineChanceBehavior.Start += ChanceShenanigans;
             On.RoR2.RouletteChestController.Start += ListItems;
@@ -53,6 +52,13 @@ namespace RoRGauntlet
 
             // teleporter
             On.RoR2.TeleporterInteraction.OnEnable += AddTeleporter;
+        }
+
+        private void TestTest(On.RoR2.ShopTerminalBehavior.orig_GenerateNewPickupServer_bool orig, ShopTerminalBehavior self, bool newHidden)
+        {
+            orig(self, newHidden);
+
+            Debug.Log("setting new pickup to " + self.NetworkpickupIndex + " with hidden at " + self.Networkhidden);
         }
 
         private void AddTeleporter(On.RoR2.TeleporterInteraction.orig_OnEnable orig, TeleporterInteraction self)
@@ -131,26 +137,21 @@ namespace RoRGauntlet
             }
         }
 
-        HashSet<ShopTerminalBehavior> delDupes = new();
-        private void SetPrinterIndex(On.RoR2.ShopTerminalBehavior.orig_SetPickupIndex orig, ShopTerminalBehavior self, PickupIndex newPickupIndex, bool newHidden)
+        private void SetPrinterIndex(On.RoR2.ShopTerminalBehavior.orig_GenerateNewPickupServer_bool orig, ShopTerminalBehavior self, bool newHidden)
         {
-            bool flag = (self.pickupIndex == newPickupIndex && self.hidden == newHidden) || !delDupes.Add(self);
-            orig(self, newPickupIndex, newHidden);
-
-            if (newPickupIndex == PickupIndex.none) return;
-            if (flag) return; // DON'T LOG UNCHANGES and THE FIRST OCCURANCE
-
+            orig(self, newHidden);
 
             // MULTISHOP
             if (self.serverMultiShopController != null)
             {
-                var itemData = GenerateItemDataFromPickup(newPickupIndex, !newHidden);
+                // add question marks
+                var itemData = GenerateItemDataFromPickup(self.NetworkpickupIndex, !newHidden);
                 PopulateLoot(self.serverMultiShopController.gameObject, itemData);
             }
             // PRINTER
             else
             {
-                var itemData = GenerateItemDataFromPickup(newPickupIndex, true);
+                var itemData = GenerateItemDataFromPickup(self.NetworkpickupIndex, true);
                 PopulateLoot(self.gameObject, itemData);
             }
         }
@@ -237,7 +238,8 @@ namespace RoRGauntlet
         // HELPER METHODS
         public void PopulateLoot(GameObject key, ItemData item)
         {
-            if (key == null || item == null || !populoot.ContainsKey(key))
+            // remove invalid loots
+            if (key == null || item == null || !populoot.ContainsKey(key) || !key.activeInHierarchy)
             {
                 Debug.Log("fuck " + key + " this " + item);
                 return;
@@ -245,7 +247,7 @@ namespace RoRGauntlet
 
             populoot[key].loot.Add(item);
         }
-        public void AppendLoot() { Info.stageLoots.Add(loot); loot = null; delDupes = new(); }
+        public void AppendLoot() { Info.stageLoots.Add(loot); loot = null; }
 
         public UsefulInfo MakeUsefulInfoBase(GameObject obj)
         {

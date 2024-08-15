@@ -1,6 +1,6 @@
 ﻿using RoR2;
 
-namespace RoRGauntlet
+namespace Extractinfo
 {
     public class TokenHelper
     {
@@ -15,6 +15,7 @@ namespace RoRGauntlet
         public const string GreenMultishop = "MULTISHOP_GREEN_NAME";
         public const string EquipMultishop = "MULTISHOP_ORANGE_NAME";
         public const string FallenMultishop = "MULTISHOP_SHORM_NAME";
+        public const string QuestionItem = "UNKNOWN_ITEM_NAME";
         public static string GetMultishopFromPickup(PickupDef pickup)
         {
             if (pickup.equipmentIndex != EquipmentIndex.None) return EquipMultishop;

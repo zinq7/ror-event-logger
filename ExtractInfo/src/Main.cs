@@ -1,9 +1,5 @@
 using BepInEx;
-using BepInEx.Logging;
-using RoR2;
-using RoRGauntlet;
-using System;
-using UnityEngine;
+using Extractinfo;
 
 namespace ExtractInfo
 {

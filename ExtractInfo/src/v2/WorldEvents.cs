@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+
 namespace RoRes
 {
     public class StageStartEvent : RunEvent
