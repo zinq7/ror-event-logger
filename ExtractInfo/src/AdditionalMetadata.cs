@@ -6,9 +6,8 @@ using BepInEx;
 using System.IO;
 using System;
 using UnityEngine;
-using System.Net.Http;
 
-namespace RoRGauntlet
+namespace Extractinfo
 {
     public class AdditionalMetadata : MonoBehaviour
     {
@@ -23,8 +22,6 @@ namespace RoRGauntlet
 
             timeliner = new EventTimeline(); // event timeline
             itemLogger = new ItemLogger(); // item logs
-
-            RoRGauntletWrapper._InitVars();
            
             On.RoR2.GenericSkill.OnExecute += SkillLog;  // using skills
 
