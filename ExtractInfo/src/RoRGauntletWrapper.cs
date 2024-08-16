@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json;
 using BepInEx.Logging;
+using RoRGauntlet;
 
 /**
  * Wrapper for RoRGauntlet mod
@@ -39,6 +40,8 @@ public static class RoRGauntletWrapper
         if (BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(GAUNTLET_NAME))
         {
             _InitVars();
+            string end_time = AdditionalMetadata.info.endTime.ToString();
+            string num_deaths = AdditionalMetadata.info.num_deaths.ToString();
 
             Debug.Log("trying to upload run...");
             var client = new HttpClient
@@ -55,6 +58,8 @@ public static class RoRGauntletWrapper
                 { new StringContent(_env), "env" },
                 { new StringContent(_loadout_num), "loadout_num" },
                 { new StringContent(_current_run_string), "lobby_string" },
+                { new StringContent(end_time), "end_time" },
+                { new StringContent(num_deaths), "num_deaths" },
                 { new StringContent(SALT), "salt" },
             };
 

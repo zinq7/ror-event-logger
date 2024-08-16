@@ -7,6 +7,7 @@ using System.IO;
 using System;
 using UnityEngine;
 using System.Net.Http;
+using System.Globalization;
 
 namespace RoRGauntlet
 {
@@ -23,16 +24,20 @@ namespace RoRGauntlet
 
             timeliner = new EventTimeline(); // event timeline
             itemLogger = new ItemLogger(); // item logs
-
-            RoRGauntletWrapper._InitVars();
            
             On.RoR2.GenericSkill.OnExecute += SkillLog;  // using skills
+            On.RoR2.CharacterMaster.OnBodyDeath += (orig, self, body) =>
+            {
+                if (body.isPlayerControlled == true && self.inventory.GetItemCount(RoR2Content.Items.ExtraLife) == 0 && self.inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoid) == 0)
+                {
+                    info.num_deaths++;
+                }
+                orig(self, body);
+            };
 
             On.RoR2.Run.Start += LoadInfo;
             On.RoR2.Run.OnClientGameOver += SaveToFile; // EXPORT ALL DATA (to a file)
         }
-
-
 
         private void LoadInfo(On.RoR2.Run.orig_Start orig, Run self)
         {
@@ -57,7 +62,8 @@ namespace RoRGauntlet
 
         private void SaveToFile(On.RoR2.Run.orig_OnClientGameOver orig, Run self, RunReport rep)
         {
-            timeliner.AddEvent(new RunEndEvent() { timestamp = self.GetRunStopwatch() * 1000, x = 0, y = 0, z = 0 });
+            info.endTime = self.GetRunStopwatch() * 1000;
+            timeliner.AddEvent(new RunEndEvent() { timestamp = info.endTime, x = 0, y = 0, z = 0 });
             itemLogger.AppendLoot();
 
             orig(self, rep);
@@ -92,7 +98,9 @@ namespace RoRGauntlet
             public string difficulty = "Eclipse8"; // Easy, Medium, Hard, eclispes
             public string player = "NONE"; // player (i.e ZINQ)
             public Dictionary<string, int> skillUses = new(); // skillname, use#
-            public List<StageLoot> stageLoots = new(); // list of interactables 
+            public List<StageLoot> stageLoots = new(); // list of interactables
+            public int num_deaths = 0;
+            public float endTime = 0;
         }
 
     }
