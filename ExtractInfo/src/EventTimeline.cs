@@ -162,7 +162,7 @@ namespace RoRGauntlet
                     {
                         timestamp = Run.instance.GetRunStopwatch() * 1000f,
                         health = body.healthComponent.combinedHealthFraction,
-                        cash = master.money
+                        cash = (int) master.money
                     }, body.gameObject);
 
                 }

@@ -184,7 +184,7 @@ namespace RoRGauntlet
             loot = new StageLoot()
             {
                 stageName = nextStage.cachedName,
-                stageNum = self.stageClearCount + 1,
+                stageNum = self.stageClearCount + 2,
                 stageLoot = new()
             };
 

@@ -6,6 +6,8 @@ using BepInEx;
 using System.IO;
 using System;
 using UnityEngine;
+using System.Net.Http;
+using System.Globalization;
 
 namespace RoRGauntlet
 {
@@ -24,12 +26,18 @@ namespace RoRGauntlet
             itemLogger = new ItemLogger(); // item logs
            
             On.RoR2.GenericSkill.OnExecute += SkillLog;  // using skills
+            On.RoR2.CharacterMaster.OnBodyDeath += (orig, self, body) =>
+            {
+                if (body.isPlayerControlled == true && self.inventory.GetItemCount(RoR2Content.Items.ExtraLife) == 0 && self.inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoid) == 0)
+                {
+                    info.num_deaths++;
+                }
+                orig(self, body);
+            };
 
             On.RoR2.Run.Start += LoadInfo;
             On.RoR2.Run.OnClientGameOver += SaveToFile; // EXPORT ALL DATA (to a file)
         }
-
-
 
         private void LoadInfo(On.RoR2.Run.orig_Start orig, Run self)
         {
@@ -43,7 +51,9 @@ namespace RoRGauntlet
                 enumerator.MoveNext();
             }
             info.difficulty = self.selectedDifficulty.ToString();
-            info.player = SteamworksClientManager.instance.steamworksClient.Username; // steam username
+
+            // doesn't work with amd
+            //info.player = SteamworksClientManager.instance.steamworksClient.Username; // steam username
 
             timeliner.currentStage = null; // not to transfer over between runs
 
@@ -52,7 +62,8 @@ namespace RoRGauntlet
 
         private void SaveToFile(On.RoR2.Run.orig_OnClientGameOver orig, Run self, RunReport rep)
         {
-            timeliner.AddEvent(new RunEndEvent() { timestamp = self.GetRunStopwatch() * 1000, x = 0, y = 0, z = 0 });
+            info.endTime = self.GetRunStopwatch() * 1000;
+            timeliner.AddEvent(new RunEndEvent() { timestamp = info.endTime, x = 0, y = 0, z = 0 });
             itemLogger.AppendLoot();
 
             orig(self, rep);
@@ -60,7 +71,10 @@ namespace RoRGauntlet
             var logFolder = $"{FilePath}\\RunReports";
             Directory.CreateDirectory(logFolder);
 
-            File.WriteAllText(logFolder + "\\" + DateTime.UtcNow.ToString("yyyy_MM_dd_HH_mm_ss") + ".run.json", GetJSON()); // cool
+            var filePath = logFolder + "\\" + DateTime.UtcNow.ToString("yyyy_MM_dd_HH_mm_ss") + ".run.json";
+            File.WriteAllText(filePath, GetJSON());
+
+            RoRGauntletWrapper._UploadRun(filePath);
         }
 
         private void SkillLog(On.RoR2.GenericSkill.orig_OnExecute orig, GenericSkill self)
@@ -84,7 +98,9 @@ namespace RoRGauntlet
             public string difficulty = "Eclipse8"; // Easy, Medium, Hard, eclispes
             public string player = "NONE"; // player (i.e ZINQ)
             public Dictionary<string, int> skillUses = new(); // skillname, use#
-            public List<StageLoot> stageLoots = new(); // list of interactables 
+            public List<StageLoot> stageLoots = new(); // list of interactables
+            public int num_deaths = 0;
+            public float endTime = 0;
         }
 
     }
