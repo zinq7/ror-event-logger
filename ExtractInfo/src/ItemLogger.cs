@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using RoRes;
 using UnityEngine;
-using IL.RoR2.UI;
 
 namespace RoRGauntlet
 {

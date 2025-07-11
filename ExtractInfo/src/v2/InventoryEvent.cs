@@ -14,6 +14,11 @@ namespace RoRes
         public string englishName;
         public ItemTier tier;
     }
+
+    public class Equipment : Item
+    {
+        // risk of rain 2
+    }
     public enum Transaction
     {
         Pickup,

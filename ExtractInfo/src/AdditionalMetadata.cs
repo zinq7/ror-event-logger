@@ -6,8 +6,6 @@ using BepInEx;
 using System.IO;
 using System;
 using UnityEngine;
-using System.Net.Http;
-using System.Globalization;
 
 namespace RoRGauntlet
 {

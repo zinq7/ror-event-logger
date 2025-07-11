@@ -4,7 +4,6 @@ using System;
 using UnityEngine;
 using System.Net.Http;
 using System.Text;
-using Newtonsoft.Json;
 using BepInEx.Logging;
 using RoRGauntlet;
 
@@ -22,7 +21,9 @@ public static class RoRGauntletWrapper
     private static string _current_run_string = "NOT_FOUND";
 
     // Constants
-    private const string POST_URL = "http://bage.cab/_RoR2Run/";
+    private const string POST_URL = "https://bage.cab/_RoR2Run/"; // for prod build
+
+    // private const string POST_URL = "https://127.0.0.1/_RoR2Run/"; // for local testing
 
     private const string GAUNTLET_NAME = "RiskOfResources.RoRGauntlet";
 

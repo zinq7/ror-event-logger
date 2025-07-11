@@ -4,7 +4,6 @@ using System.Collections;
 using RoRes;
 using UnityEngine;
 using ExtractInfo;
-using UnityEngine.UIElements;
 
 namespace RoRGauntlet
 {
@@ -41,6 +40,8 @@ namespace RoRGauntlet
             On.RoR2.ScrapperController.BeginScrapping += ScrapItem;
             On.RoR2.PurchaseInteraction.CreateItemTakenOrb += PrintItem;
 
+            On.RoR2.CharacterBody.OnEquipmentGained += PickupEquipment;
+
             // boss events
             On.RoR2.BossGroup.AddBossMemory += AddBoss;
             On.RoR2.BossGroup.OnDefeatedServer += KillBoss;
@@ -67,8 +68,6 @@ namespace RoRGauntlet
             //On.RoR2.PortalSpawner.OnWillSpawnUpdated += SpawnPortals;
             //On.RoR2.PortalSpawner.Start += SpawnOrbs;
         }
-
-
 
         private void SpawnMithry(On.EntityStates.Missions.BrotherEncounter.PreEncounter.orig_OnEnter orig, EntityStates.Missions.BrotherEncounter.PreEncounter self)
         {
@@ -389,7 +388,23 @@ namespace RoRGauntlet
             }
         }
 
+        private void PickupEquipment(On.RoR2.CharacterBody.orig_OnEquipmentGained orig, CharacterBody self, EquipmentDef equipmentDef)
+        {
+            orig(self, equipmentDef);
 
+            if (self != null && self.isPlayerControlled)
+            {
+                var pos = self.corePosition;
+                AddEvent(new InventoryEvent()
+                {
+                    item = new Equipment() { englishName = equipmentDef.nameToken },
+                    timestamp = Run.instance.GetRunStopwatch() * 1000f,
+                    x = pos.x,
+                    y = pos.y,
+                    z = pos.z
+                });
+            }
+        }
 
         private void StageSplit(On.RoR2.Run.orig_AdvanceStage orig, Run self, SceneDef nextStage)
         {

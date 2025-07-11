@@ -2,7 +2,7 @@
 
 Not actually the extract mod anymore on this branch, which is stupid, but it's kinda like the mod that tests yoinking run data for exportation. 
 
-# Deploy
+## Deploy
 
 1. Update `version_number` in `manifest.json`
 2. Update `PluginVersion` in `Main.cs`
@@ -10,8 +10,14 @@ Not actually the extract mod anymore on this branch, which is stupid, but it's k
 4. Execute `$ dotnet build --configuration Release`
 5. Bundled package is located in `/dist`
 
-# Changelog
+## Local debugging
 
-**-1.0.0**
+To build: `dotnet build .\ExtractInfo\ExtractInfo.sln`
 
--   Why is this a branch, you may ask, and the answer is i'm lazy.
+- Import `ExtractInfo\bin\Debug\netstandard2.0\ExtractInfo.dll` as local mod
+
+## Changelog
+
+### -1.0.0
+
+- Why is this a branch, you may ask, and the answer is i'm lazy.
