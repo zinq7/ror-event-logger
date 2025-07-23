@@ -24,14 +24,6 @@ namespace RoRGauntlet
             itemLogger = new ItemLogger(); // item logs
            
             On.RoR2.GenericSkill.OnExecute += SkillLog;  // using skills
-            On.RoR2.CharacterMaster.OnBodyDeath += (orig, self, body) =>
-            {
-                if (body.isPlayerControlled == true && self.inventory.GetItemCount(RoR2Content.Items.ExtraLife) == 0 && self.inventory.GetItemCount(DLC1Content.Items.ExtraLifeVoid) == 0)
-                {
-                    info.num_deaths++;
-                }
-                orig(self, body);
-            };
 
             On.RoR2.Run.Start += LoadInfo;
             On.RoR2.Run.OnClientGameOver += SaveToFile; // EXPORT ALL DATA (to a file)

@@ -371,21 +371,28 @@ namespace RoRGauntlet
         {
             orig(self, itemIndex);
 
-            if (self != null && self.GetBody() != null && self.GetBody().isPlayerControlled)
+            bool isPlus5 = (int)itemIndex == 106; // Lazarus' wings
+            if (isPlus5)
             {
-                var item = ItemCatalog.GetItemDef(itemIndex);
-                var pos = self.GetBody().corePosition;
-                AddEvent(new InventoryEvent()
-                {
-                    item = new Item() { englishName = Eng(item.nameToken), tier = item.tier },
-                    timestamp = Run.instance.GetRunStopwatch() * 1000f,
-                    transactionType = Transaction.Pickup,
-                    quantity = 1, // gained 1 item per pickup
-                    x = pos.x,
-                    y = pos.y,
-                    z = pos.z
-                }); ;
+                Info.num_deaths++;
             }
+
+            // Player is dead while collecting wings, so need a separate check for that
+                if ((self != null && self.GetBody() != null && self.GetBody().isPlayerControlled) || isPlus5)
+                {
+                    var item = ItemCatalog.GetItemDef(itemIndex);
+                    var pos = self.GetBody().corePosition;
+                    AddEvent(new InventoryEvent()
+                    {
+                        item = new Item() { englishName = Eng(item.nameToken), tier = item.tier },
+                        timestamp = Run.instance.GetRunStopwatch() * 1000f,
+                        transactionType = Transaction.Pickup,
+                        quantity = 1, // gained 1 item per pickup
+                        x = pos.x,
+                        y = pos.y,
+                        z = pos.z
+                    });
+                }
         }
 
         private void PickupEquipment(On.RoR2.CharacterBody.orig_OnEquipmentGained orig, CharacterBody self, EquipmentDef equipmentDef)
